@@ -3,7 +3,7 @@ AIFit
 
 Chapter 7 — Active Generalized Filtering
 
-Simulation of the Bayesian Thermostat.
+Simulation of the Bayesian thermostat.
 
 Perception updates beliefs.
 Action changes the world.
@@ -15,34 +15,40 @@ from __future__ import annotations
 import numpy as np
 
 from aifit.agent import ActiveInferenceAgent
+from aifit.config import SimulationConfig
 from aifit.environment import ThermalEnvironment
 from aifit.plotting import plot_trajectory
 
 
 def run_simulation(
-    steps: int = 500,
-    dt: float = 0.1,
-    seed: int = 7,
+    config: SimulationConfig | None = None,
 ) -> dict[str, np.ndarray]:
-    """Run one Active Inference simulation.
+    """Run the Chapter 7 Active Inference simulation.
+
+    Parameters
+    ----------
+    config:
+        Reproducible simulation configuration. Default values are used
+        when no configuration is supplied.
 
     Returns
     -------
     dict[str, np.ndarray]
-        Time series of all simulated variables.
+        Time series of environmental, perceptual, and action variables.
     """
 
-    rng = np.random.default_rng(seed)
+    config = config or SimulationConfig()
+    rng = np.random.default_rng(config.seed)
 
-    # Environment: the generative process
+    # Generative process: the actual environment
     environment = ThermalEnvironment(
-        position=20.0,
+        position=config.initial_position,
     )
 
-    # Agent: the generative model
+    # Generative model: the agent's beliefs and preferences
     agent = ActiveInferenceAgent(
-        position_belief=10.0,
-        preferred_temperature=13.0,
+        position_belief=config.initial_position_belief,
+        preferred_temperature=config.preferred_temperature,
     )
 
     trajectory: dict[str, list[float]] = {
@@ -52,48 +58,55 @@ def run_simulation(
         "observation": [],
         "prediction": [],
         "preferred": [],
+        "sensory_error": [],
+        "preference_error": [],
         "action": [],
         "free_energy": [],
     }
 
-    # Main action–perception loop
-    for step in range(steps):
-        # 1. Sense the environment
+    for step in range(config.steps):
+        # 1. Sensation
         observation = environment.observe(rng)
 
-        # 2. Perception: update hidden-state beliefs
+        # Errors before belief and action are updated
+        sensory_error = agent.sensory_prediction_error(observation)
+        preference_error = agent.preference_error(observation)
+
+        # 2. Perception: change beliefs to explain sensory evidence
         agent.update_belief(
             observation,
-            dt=dt,
+            dt=config.dt,
         )
 
-        # 3. Action begins after the initial perceptual phase
-        if step > 100:
+        # 3. Action: change the world toward preferred observations
+        if step >= config.action_start_step:
             agent.update_action(
                 observation,
-                dt=dt,
+                dt=config.dt,
             )
         else:
             agent.action = 0.0
 
-        # 4. Evaluate the current prediction-error objective
+        # This remains a pedagogical proxy for now
         free_energy = agent.free_energy_proxy(observation)
 
-        # 5. Store the trajectory
-        trajectory["time"].append(step * dt)
+        # 4. Record the current trajectory
+        trajectory["time"].append(step * config.dt)
         trajectory["true_position"].append(environment.position)
         trajectory["belief"].append(agent.position_belief)
         trajectory["observation"].append(observation)
         trajectory["prediction"].append(agent.predict_temperature())
         trajectory["preferred"].append(agent.preferred_temperature)
+        trajectory["sensory_error"].append(sensory_error)
+        trajectory["preference_error"].append(preference_error)
         trajectory["action"].append(agent.action)
         trajectory["free_energy"].append(free_energy)
 
-        # 6. Apply action to the environment
+        # 5. Apply action to the generative process
         environment.step(
             action=agent.action,
             rng=rng,
-            dt=dt,
+            dt=config.dt,
         )
 
     return {
@@ -102,9 +115,16 @@ def run_simulation(
     }
 
 
-if __name__ == "__main__":
-    trajectory = run_simulation()
+def main() -> None:
+    """Run and plot the default Chapter 7 simulation."""
+    config = SimulationConfig()
+    trajectory = run_simulation(config)
+
     plot_trajectory(
         trajectory,
-        action_start_time=10.0,
+        action_start_time=config.action_start_time,
     )
+
+
+if __name__ == "__main__":
+    main()
