@@ -1,222 +1,157 @@
 # AIFit
 
-> *Learn Active Inference by building it.*
+A reproducible Python implementation companion for selected Active Inference
+concepts.
 
-AIFit is an open-source educational framework that implements the concepts of **Active Inference** in Python through transparent simulations, mathematical derivations, and reproducible code.
+AIFit translates small, well-defined theoretical components into transparent
+simulations, tested probability primitives, documented assumptions, and
+versioned experimental results. The current work focuses on the relationship
+between belief updating, action, uncertainty, and epistemic policy selection.
 
-The project follows the book
+> **Question:** How can an agent use uncertain observations and preferences to
+> decide whether to act directly or first gather information?
 
-> **Fundamentals of Active Inference: Principles, Algorithms, and Applications**
+## Current scope
 
-chapter by chapter, translating theoretical concepts into executable models.
+| Chapter | Status | Implementation |
+| --- | --- | --- |
+| 7 | Complete | Bayesian thermostat with perception, action, prediction errors, and a free-energy proxy |
+| 8 | Complete | Discrete cue-and-commit task with preference-only and expected-free-energy policy planners |
+| 9+ | Planned | Further policy-selection and learning extensions |
 
-The long-term vision is to provide a reusable Active Inference framework for computational neuroscience, adaptive systems, health, robotics, and machine learning.
+The repository is intentionally incremental: each chapter isolates a small
+computational problem before introducing additional formal machinery.
 
----
+## Chapter 7 — Bayesian thermostat
 
-# Philosophy
+Chapter 7 implements an Active-Inference-inspired thermostat. The agent
+maintains beliefs about a hidden temperature state, receives noisy
+observations, updates its beliefs, and acts to move the environment toward a
+preferred sensory state.
 
-AIFit follows a simple learning cycle:
+The implementation includes:
 
-```text
-Read
-   ↓
-Understand
-   ↓
-Implement
-   ↓
-Visualize
-   ↓
-Experiment
-```
+- a continuous hidden-state environment;
+- Bayesian belief updates and prediction errors;
+- an action-perception loop;
+- configuration-driven, reproducible simulation; and
+- tests for core agent, environment, and simulation behaviour.
 
-Rather than treating Active Inference as abstract mathematics, AIFit aims to make every major concept executable and reproducible.
+![Bayesian thermostat trajectory](figures/chapter07/figure_7_6_bayesian_thermostat.png)
 
----
+This chapter is a transparent teaching model, not a full generalized-filtering
+implementation of variational Active Inference.
 
-# Current Progress
+## Chapter 8 — Expected free energy in a cue-and-commit task
 
-| Chapter | Status | Description |
-|---------|--------|-------------|
-| 7 | ✅ Complete | Bayesian Thermostat & Action–Perception Loop |
-| 8 | ⬜ Planned | Expected Free Energy |
-| 9 | ⬜ Planned | Policy Selection |
-| 10 | ⬜ Planned | Learning |
+Chapter 8 introduces a small discrete decision problem. An agent can commit
+directly to a left or right option, or pay to inspect a noisy cue before
+committing.
 
----
+The benchmark compares:
 
-# Repository Structure
+- a **preference-only planner**, which selects the policy with the highest
+  expected task outcome; and
+- an **expected-free-energy planner**, which additionally assigns value to
+  expected information gain.
 
-```text
-AIFit
-│
-├── src/
-│   └── aifit/
-│       ├── agent.py
-│       ├── config.py
-│       ├── environment.py
-│       ├── plotting.py
-│       └── simulation.py
-│
-├── tests/
-│
-├── notebooks/
-│
-├── figures/
-│
-├── docs/
-│
-└── README.md
-```
-
----
-
-# Current Example
-
-## Bayesian Thermostat (Chapter 7)
-
-The first implementation demonstrates the core Active Inference cycle.
+The operational score is:
 
 ```text
-Environment
-      ↓
-Observation
-      ↓
-Prediction Error
-      ↓
-Belief Update
-      ↓
-Action
-      ↓
-Environment
+expected preference value
++ epistemic weight × expected information gain
+- inspection cost
 ```
 
-The simulation illustrates how perception updates hidden-state beliefs while action changes the environment to fulfil preferred sensory states.
+![Chapter 8 benchmark summary](results/chapter08/figures/chapter08_benchmark_summary.png)
 
-The generated figures reproduce the qualitative behaviour described in Chapter 7.
+### Benchmark result
 
----
+The tracked benchmark aggregates 64 seeds with 128 episodes per seed.
 
-# Current Features
+- With an uncertain prior and a moderately informative cue, the
+  preference-only planner commits directly, whereas the EFE planner inspects.
+- Inspection raises mean success from 0.496 to 0.604 in that condition.
+- After inspection cost, mean net value is 0.496 for the preference-only
+  planner and 0.494 for the EFE planner.
+- Both planners avoid inspection when the cue is uninformative, the prior is
+  already confident, or inspection is expensive.
+- When the cue is highly informative, inspection directly improves expected
+  outcome, so both planners inspect.
 
-- Continuous hidden-state simulation
-- Bayesian belief updates
-- Active perception
-- Active control
-- Prediction errors
-- Free-energy proxy
-- Publication-quality figures
-- Automated tests
-- Reproducible simulation configuration
+The result is deliberately nuanced: epistemic behaviour can improve task
+success without necessarily improving external reward after information costs
+are included.
 
----
+See [Chapter 8 notes](docs/chapter08.md) for the mathematical setup,
+assumptions, references, and explicit non-claims.
 
-# Installation
+## Reproduce
 
-Clone the repository
+Requires Python 3.12 or later.
 
 ```bash
 git clone https://github.com/vertu-al/AIFit.git
 cd AIFit
-```
 
-Create a virtual environment
-
-```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
 ```
 
-Install
+Run quality checks:
 
 ```bash
-pip install -e ".[dev]"
+python -m ruff check .
+python -m pytest
 ```
 
-Run the simulation
+Run the Chapter 7 simulation:
 
 ```bash
 python -m aifit.simulation
 ```
 
-Run the tests
+Run and plot the Chapter 8 benchmark:
 
 ```bash
-python -m pytest
+python scripts/run_chapter08_benchmark.py \
+  --config configs/chapter08_benchmark.json \
+  --output-dir results/chapter08
+
+python scripts/plot_chapter08_results.py
 ```
 
----
+## Repository structure
 
-# Roadmap
+```text
+AIFit/
+├── configs/                  # Reproducible experiment configurations
+├── docs/                     # Chapter notes, assumptions, and limitations
+├── figures/                  # Chapter 7 tracked figure
+├── notebooks/                # Executable chapter notebooks
+├── results/                  # Versioned Chapter 8 outputs and figures
+├── scripts/                  # Benchmark and plotting entry points
+├── src/aifit/                # Package implementation
+└── tests/                    # Unit and integration tests
+```
 
-## Foundations
+## Design principles
 
-- ✅ Chapter 7
-- ⬜ Chapter 8
-- ⬜ Chapter 9
-- ⬜ Chapter 10
+- Make assumptions explicit.
+- Keep mathematical operations inspectable.
+- Separate reusable implementation from experiments and visualisation.
+- Track configurations, outputs, and failure-relevant results.
+- State limitations alongside results.
 
-## Framework
+## Scope and non-claims
 
-- Trajectory objects
-- Proper variational free energy
-- Generalized coordinates
-- Expected free energy
-- Policy selection
-- Learning
+AIFit is not a production Active Inference framework, a full variational
+inference engine, or evidence that biological agents optimize expected free
+energy. It is a small, reproducible implementation project for studying
+specific computational ideas under controlled assumptions.
 
-## Example Library
+## License
 
-- Bayesian Thermostat
-- Mountain Car
-- Pendulum
-- Cart-Pole
-- Fitness
-- Homeostasis
-- Cochlear Implant (planned)
-- Active Vision
-
----
-
-# Design Principles
-
-Every implementation in AIFit should be
-
-- mathematically transparent
-- scientifically reproducible
-- well documented
-- extensively tested
-- easy to read
-- directly connected to the underlying theory
-
-The goal is not merely to reproduce published algorithms, but to understand why they work.
-
----
-
-# License
-
-This project is currently under active development.
-
-A license will be added before the first stable release.
-
----
-
-# Citation
-
-If you find AIFit useful for teaching or research, please cite the original Active Inference literature.
-
----
-
-## Author
-
-**Verena Uyka**
-
-Biologist • Artificial Intelligence Student • Neuro- & Psycholinguistics (M.Sc.)
-
-Research interests:
-
-- Active Inference
-- Computational Neuroscience
-- Cochlear Implants
-- Auditory Learning
-- Predictive Processing
+See [LICENSE](LICENSE) for licensing terms.

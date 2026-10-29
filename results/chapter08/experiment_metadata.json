@@ -1,0 +1,8 @@
+{
+  "config_file": "configs/chapter08_benchmark.json",
+  "config_sha256": "7d022b218e8bc05290c9e52bd6846b7ba14f9c37d2b845d86d8ee890d0b29470",
+  "n_conditions": 5,
+  "n_episodes_per_seed": 128,
+  "n_rows": 10,
+  "n_seeds": 64
+}
