@@ -1,0 +1,38 @@
+{
+  "n_episodes_per_seed": 128,
+  "seed_start": 2026,
+  "n_seeds": 64,
+  "epistemic_weight": 1.0,
+  "conditions": [
+    {
+      "name": "uncertain_modestly_informative",
+      "prior_left_good": 0.5,
+      "cue_reliability": 0.6,
+      "inspection_cost": 0.11
+    },
+    {
+      "name": "uncertain_highly_informative",
+      "prior_left_good": 0.5,
+      "cue_reliability": 0.8,
+      "inspection_cost": 0.1
+    },
+    {
+      "name": "uncertain_uninformative",
+      "prior_left_good": 0.5,
+      "cue_reliability": 0.5,
+      "inspection_cost": 0.11
+    },
+    {
+      "name": "confident_prior_reliable_cue",
+      "prior_left_good": 0.95,
+      "cue_reliability": 0.8,
+      "inspection_cost": 0.11
+    },
+    {
+      "name": "uncertain_expensive_inspection",
+      "prior_left_good": 0.5,
+      "cue_reliability": 0.8,
+      "inspection_cost": 0.55
+    }
+  ]
+}

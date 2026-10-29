@@ -1,0 +1,11 @@
+condition,planner,selected_policy,prior_left_good,cue_reliability,inspection_cost,epistemic_weight,n_seeds,n_episodes_per_seed,expected_preference_value,expected_information_gain,policy_score,mean_success_rate,mean_inspection_rate,mean_net_value
+uncertain_modestly_informative,preference_only,commit_left,0.5,0.6,0.11,1.0,64,128,0.5,0.0,0.5,0.4962158203125,0.0,0.4962158203125
+uncertain_modestly_informative,expected_free_energy,inspect_then_commit,0.5,0.6,0.11,1.0,64,128,0.6,0.020135513550688863,0.5101355135506889,0.6036376953125,1.0,0.4936376953125
+uncertain_highly_informative,preference_only,inspect_then_commit,0.5,0.8,0.1,1.0,64,128,0.8,0.1927447570217575,0.7000000000000001,0.8040771484375,1.0,0.7040771484375
+uncertain_highly_informative,expected_free_energy,inspect_then_commit,0.5,0.8,0.1,1.0,64,128,0.8,0.1927447570217575,0.8927447570217576,0.8040771484375,1.0,0.7040771484375
+uncertain_uninformative,preference_only,commit_left,0.5,0.5,0.11,1.0,64,128,0.5,0.0,0.5,0.4962158203125,0.0,0.4962158203125
+uncertain_uninformative,expected_free_energy,commit_left,0.5,0.5,0.11,1.0,64,128,0.5,0.0,0.5,0.4962158203125,0.0,0.4962158203125
+confident_prior_reliable_cue,preference_only,commit_left,0.95,0.8,0.11,1.0,64,128,0.95,0.0,0.95,0.9490966796875,0.0,0.9490966796875
+confident_prior_reliable_cue,expected_free_energy,commit_left,0.95,0.8,0.11,1.0,64,128,0.95,0.0,0.95,0.9490966796875,0.0,0.9490966796875
+uncertain_expensive_inspection,preference_only,commit_left,0.5,0.8,0.55,1.0,64,128,0.5,0.0,0.5,0.4962158203125,0.0,0.4962158203125
+uncertain_expensive_inspection,expected_free_energy,commit_left,0.5,0.8,0.55,1.0,64,128,0.5,0.0,0.5,0.4962158203125,0.0,0.4962158203125
